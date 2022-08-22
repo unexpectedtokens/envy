@@ -8,9 +8,23 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-const CREATE_NEW_ONE = "Create a new env file"
+const CREATE_NEW_ENV = "Create a new env file"
+
+func createNewENVFile() {
+	fmt.Println("Creating new env file")
+	prompt := promptui.Prompt{
+		Label: "Type in the name the file should have. Remember that the name should start with a . and should end with .env if you wish to have the ability to update the file later on with Envy",
+	}
+	prompt.Run()
+
+}
+
+func editExistingENVFile() {
+
+}
 
 func main() {
+	fmt.Println("Scanning for existing .env files...")
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -34,9 +48,21 @@ func main() {
 		fmt.Println("Existing env file(s) found. Pick one of the files to edit or create a new one:")
 		prompt := promptui.Select{
 			Label: "Select one of the options by going up or down with the arrow keys and confirming with the enter key",
-			Items: append(existingEnv, CREATE_NEW_ONE),
+			Items: append(existingEnv, CREATE_NEW_ENV),
 		}
-		prompt.Run()
+
+		number, value, err := prompt.Run()
+
+		if err != nil {
+			panic(err)
+		}
+		if value == CREATE_NEW_ENV {
+			createNewENVFile()
+		}
+		fmt.Println(number)
+	} else {
+		fmt.Println("No existing env files found")
+		createNewENVFile()
 	}
 
 }
