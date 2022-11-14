@@ -5,64 +5,49 @@ import (
 	"os"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/manifoldco/promptui"
 )
 
-const CREATE_NEW_ENV = "Create a new env file"
-
-func createNewENVFile() {
-	fmt.Println("Creating new env file")
-	prompt := promptui.Prompt{
-		Label: "Type in the name the file should have. Remember that the name should start with a . and should end with .env if you wish to have the ability to update the file later on with Envy",
-	}
-	prompt.Run()
-
-}
-
-func editExistingENVFile() {
-
-}
+var workingDirectory string
 
 func main() {
 	fmt.Println("Scanning for existing .env files...")
-	wd, err := os.Getwd()
+	var err error
+	workingDirectory, err = os.Getwd()
+
 	if err != nil {
 		panic(err)
 	}
 
-	dirEntries, err := os.ReadDir(wd)
+	dirEntries, err := os.ReadDir(workingDirectory)
 	if err != nil {
 		panic(err)
 	}
 	existingEnv := []string{}
+	fmt.Println("Found the following env files. Pick the one you wish to load into this environment:")
+
 	for _, de := range dirEntries {
 		fileName := de.Name()
 		if string(fileName[0]) == "." {
 			if strings.Contains(de.Name(), "env") {
 				existingEnv = append(existingEnv, fileName)
-
+				// fmt.Printf("- %s\n", fileName)
 			}
 		}
 	}
-	if len(existingEnv) > 0 {
-		fmt.Println("Existing env file(s) found. Pick one of the files to edit or create a new one:")
-		prompt := promptui.Select{
-			Label: "Select one of the options by going up or down with the arrow keys and confirming with the enter key",
-			Items: append(existingEnv, CREATE_NEW_ENV),
-		}
-
-		number, value, err := prompt.Run()
-
-		if err != nil {
-			panic(err)
-		}
-		if value == CREATE_NEW_ENV {
-			createNewENVFile()
-		}
-		fmt.Println(number)
-	} else {
-		fmt.Println("No existing env files found")
-		createNewENVFile()
+	fmt.Println()
+	prompt := promptui.Select{
+		Label: "Select one of the options by going up or down with the arrow keys and confirming with the enter key",
+		Items: existingEnv,
 	}
+
+	_, value, err := prompt.Run()
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(value)
+	godotenv.Load(value)
 
 }
